@@ -78,6 +78,7 @@ d3.json("/data/energy3.json", function(energy) {
   fbo
       .nodes(energy.nodes)
       .links(energy.links)
+      .groups(energy.groups)
       .layout(32);
 
   var link = svg.append("g").selectAll(".link")

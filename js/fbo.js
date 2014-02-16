@@ -4,7 +4,8 @@ d3.fbo = function() {
       nodePadding = 8,
       size = [1, 1],
       nodes = [],
-      links = [];
+      links = [],
+      groups = [];
 
   fbo.nodeWidth = function(_) {
     if (!arguments.length) return nodeWidth;
@@ -27,6 +28,12 @@ d3.fbo = function() {
   fbo.links = function(_) {
     if (!arguments.length) return links;
     links = _;
+    return fbo;
+  };
+
+  fbo.groups = function(_) {
+    if (!arguments.length) return groups;
+    groups = _;
     return fbo;
   };
 
@@ -133,9 +140,25 @@ d3.fbo = function() {
   }
 
   function computeNodeBreadths() {
+  
+    get_order = function(arr, a_group){
+      arr.forEach(function(group){
+        if (group.name == a_group)
+          return group.order;
+      });
+      
+      return 0;
+    };
+
+    var group_map = d3.nest()
+        .key(function(d) { return d.name; })
+        .entries(groups);
+  
     var nodesByGroup = d3.nest()
         .key(function(d) { return d.group; })
-        .sortKeys(d3.ascending)
+        .sortKeys(function(a, b) {
+            return get_order(groups, b) < get_order(groups, a) ? -1 : get_order(groups, b) > get_order(groups, a) ? 1 : 0;
+          })
         .entries(nodes);
   
     var x = 0;
@@ -162,9 +185,10 @@ d3.fbo = function() {
         ++x;
       }
       
+      moveSinksRight(x, pair.key);
+     
     });
  
-    //moveSinksRight(x);
     scaleNodeBreadths((width - nodeWidth) / (x - 1));
   }
   
@@ -176,12 +200,16 @@ d3.fbo = function() {
     });
   }
 
-  function moveSinksRight(x) {
-    nodes.forEach(function(node) {
-      if (!node.sourceLinks.length) {
-        node.x = x - 1;
-      }
-    });
+  function moveSinksRight(x, phase) {
+    nodes
+      .filter(function(value, index, ar){
+        return (value.group == phase);
+        })
+      .forEach(function(node) {
+        if (!node.sourceLinks.length) {
+          node.x = x - 1;
+        }
+      });
   }
 
   function scaleNodeBreadths(kx) {
