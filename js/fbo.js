@@ -96,10 +96,12 @@ d3.fbo = function() {
   // Compute the value (size) of each node by summing the associated links.
   function computeNodeValues() {
     nodes.forEach(function(node) {
-      node.value = Math.max(
-        d3.sum(node.sourceLinks, value),
-        d3.sum(node.targetLinks, value)
-      );
+      node.value = node.columns;
+      //console.log("Node columns: " + node.columns);
+    });
+    
+    links.forEach(function(link) {
+      link.value = link.source.columns;
     });
   }
 
@@ -263,11 +265,11 @@ d3.fbo = function() {
       var sy = 0, ty = 0;
       node.sourceLinks.forEach(function(link) {
         link.sy = sy;
-        sy += link.dy;
+        //sy += link.dy;
       });
       node.targetLinks.forEach(function(link) {
         link.ty = ty;
-        ty += link.dy;
+        //ty += link.dy;
       });
     });
 
