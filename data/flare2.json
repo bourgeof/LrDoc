@@ -1,0 +1,186 @@
+
+  {
+    "name": "<input>",
+    "children": [
+      {
+        "name": "671",
+        "size": 60.0
+      },
+      {
+        "name": "713",
+        "size": 60.0
+      },
+      {
+        "name": "732",
+        "size": 240.0
+      },
+      {
+        "name": "LOANDEPO",
+        "children": [
+          {
+            "name": "PhaseManager files Purge",
+            "children": [
+
+            ]
+          },
+          {
+            "name": "1LiquidityRisk_PhaseInstrumen",
+            "children": [
+              {
+                "name": "1LiquidityRisk_PhaseInstrumen",
+                "children": [
+                  {
+                    "name": "784",
+                    "size": 60.0
+                  },
+                  {
+                    "name": "785",
+                    "size": 300.0
+                  },
+                  {
+                    "name": "1040",
+                    "size": 840.0
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "AGG Deal : LOANDEPO",
+        "children": [
+
+        ]
+      },
+      {
+        "name": "Swap",
+        "children": [
+          {
+            "name": "1074",
+            "size": 60.0
+          },
+          {
+            "name": "2517",
+            "size": 60.0
+          },
+          {
+            "name": "3693",
+            "size": 60.0
+          }
+        ]
+      },
+      {
+        "name": "AGG Deal : SWAP",
+        "children": [
+
+        ]
+      },
+      {
+        "name": "Forex",
+        "children": [
+          {
+            "name": "29023",
+            "size": 60.0
+          },
+          {
+            "name": "49024",
+            "size": 60.0
+          },
+          {
+            "name": "89026",
+            "size": 60.0
+          },
+          {
+            "name": "109027",
+            "size": 60.0
+          },
+          {
+            "name": "149029",
+            "size": 60.0
+          },
+          {
+            "name": "189031",
+            "size": 60.0
+          },
+          {
+            "name": "209032",
+            "size": 60.0
+          },
+          {
+            "name": "249034",
+            "size": 60.0
+          }
+        ]
+      },
+      {
+        "name": "AGG Deal : FOREX",
+        "children": [
+
+        ]
+      },
+      {
+        "name": "ACCOUNT",
+        "children": [
+          {
+            "name": "PhaseManager files Purge",
+            "children": [
+
+            ]
+          },
+          {
+            "name": "1LiquidityRisk_PhaseInstrumen",
+            "children": [
+              {
+                "name": "1LiquidityRisk_PhaseInstrumen",
+                "children": [
+                  {
+                    "name": "264216",
+                    "size": 600.0
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "AGG Deal : ACCOUNT",
+            "children": [
+
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Equity",
+        "children": [
+
+        ]
+      },
+      {
+        "name": "Repo",
+        "children": [
+
+        ]
+      },
+      {
+        "name": "FACILITY",
+        "children": [
+
+        ]
+      },
+      {
+        "name": "AGG Deal : FACILITY",
+        "children": [
+
+        ]
+      },
+      {
+        "name": "264688",
+        "size": 60.0
+      },
+      {
+        "name": "264693",
+        "size": 60.0
+      }
+    ]
+  }
