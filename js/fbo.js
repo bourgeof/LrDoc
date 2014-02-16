@@ -109,7 +109,7 @@ d3.fbo = function() {
   // Nodes are assigned the maximum breadth of incoming neighbors plus one;
   // nodes with no incoming links are assigned breadth zero, while
   // nodes with no outgoing links are assigned the maximum breadth.
-  function computeNodeBreadths() {
+  function computeNodeBreadths_old() {
     var remainingNodes = nodes,
         nextNodes,
         x = 0;
@@ -132,6 +132,42 @@ d3.fbo = function() {
     scaleNodeBreadths((width - nodeWidth) / (x - 1));
   }
 
+  function computeNodeBreadths() {
+    var nodesByGroup = d3.nest()
+        .key(function(d) { return d.group; })
+        .sortKeys(d3.ascending)
+        .entries(nodes);
+  
+    var x = 0;
+
+    nodesByGroup.forEach(function(pair) {
+      console.log("Node nodes2: " + pair.key);
+      var remainingNodes = pair.values,
+          nextNodes;
+
+      while (remainingNodes.length) {
+        nextNodes = [];
+        console.log("New iteration");
+        remainingNodes.forEach(function(node) {
+          node.x = x;
+          node.dx = nodeWidth;
+          console.log("Node name: " + node.name + ", group: " + node.group + ", x: " + node.x);
+          node.sourceLinks.forEach(function(link) {
+            if (link.target.group == pair.key){
+              nextNodes.push(link.target);
+            }
+          });
+        });
+        remainingNodes = nextNodes;
+        ++x;
+      }
+      
+    });
+ 
+    //moveSinksRight(x);
+    scaleNodeBreadths((width - nodeWidth) / (x - 1));
+  }
+  
   function moveSourcesRight() {
     nodes.forEach(function(node) {
       if (!node.targetLinks.length) {
