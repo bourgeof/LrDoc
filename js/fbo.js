@@ -1,15 +1,15 @@
 d3.fbo = function() {
   var fbo = {},
-      nodeWidth = 24,
+      nodeHeight = 24,
       nodePadding = 8,
       size = [1, 1],
       nodes = [],
       links = [],
       groups = [];
 
-  fbo.nodeWidth = function(_) {
-    if (!arguments.length) return nodeWidth;
-    nodeWidth = +_;
+  fbo.nodeHeight = function(_) {
+    if (!arguments.length) return nodeHeight;
+    nodeHeight = +_;
     return fbo;
   };
 
@@ -61,16 +61,16 @@ d3.fbo = function() {
     var curvature = .5;
 
     function link(d) {
-      var x0 = d.source.x + d.source.dx,
-          x1 = d.target.x,
-          xi = d3.interpolateNumber(x0, x1),
-          x2 = xi(curvature),
-          x3 = xi(1 - curvature),
-          y0 = d.source.y + d.sy + d.dy / 2,
-          y1 = d.target.y + d.ty + d.dy / 2;
+      var y0 = d.source.y + d.source.dy,
+          y1 = d.target.y,
+          yi = d3.interpolateNumber(y0, y1),
+          y2 = yi(curvature),
+          y3 = yi(1 - curvature),
+          x0 = d.source.x + d.sx + d.dx / 2,
+          x1 = d.target.x + d.tx + d.dx / 2;
       return "M" + x0 + "," + y0
-           + "C" + x2 + "," + y0
-           + " " + x3 + "," + y1
+           + "C" + x0 + "," + y2
+           + " " + x1 + "," + y3
            + " " + x1 + "," + y1;
     }
 
@@ -119,24 +119,24 @@ d3.fbo = function() {
   function computeNodeBreadths_old() {
     var remainingNodes = nodes,
         nextNodes,
-        x = 0;
+        y = 0;
 
     while (remainingNodes.length) {
       nextNodes = [];
       remainingNodes.forEach(function(node) {
-        node.x = x;
-        node.dx = nodeWidth;
+        node.y = y;
+        node.dy = nodeHeight;
         node.sourceLinks.forEach(function(link) {
           nextNodes.push(link.target);
         });
       });
       remainingNodes = nextNodes;
-      ++x;
+      ++y;
     }
 
     //
-    moveSinksRight(x);
-    scaleNodeBreadths((width - nodeWidth) / (x - 1));
+    moveSinksRight(y);
+    scaleNodeBreadths((height - nodeHeight) / (y - 1));
   }
 
   function computeNodeBreadths() {
@@ -161,7 +161,7 @@ d3.fbo = function() {
           })
         .entries(nodes);
   
-    var x = 0;
+    var y = 0;
 
     nodesByGroup.forEach(function(pair) {
       console.log("Node nodes2: " + pair.key);
@@ -172,9 +172,9 @@ d3.fbo = function() {
         nextNodes = [];
         console.log("New iteration");
         remainingNodes.forEach(function(node) {
-          node.x = x;
-          node.dx = nodeWidth;
-          console.log("Node name: " + node.name + ", group: " + node.group + ", x: " + node.x);
+          node.y = y;
+          node.dy = nodeHeight;
+          console.log("Node name: " + node.name + ", group: " + node.group + ", y: " + node.y);
           node.sourceLinks.forEach(function(link) {
             if (link.target.group == pair.key){
               nextNodes.push(link.target);
@@ -182,45 +182,45 @@ d3.fbo = function() {
           });
         });
         remainingNodes = nextNodes;
-        ++x;
+        ++y;
       }
       
-      moveSinksRight(x, pair.key);
+      moveSinksRight(y, pair.key);
      
     });
  
-    scaleNodeBreadths((width - nodeWidth) / (x - 1));
+    scaleNodeBreadths((height - nodeHeight) / (y - 1));
   }
   
   function moveSourcesRight() {
     nodes.forEach(function(node) {
       if (!node.targetLinks.length) {
-        node.x = d3.min(node.sourceLinks, function(d) { return d.target.x; }) - 1;
+        node.y = d3.min(node.sourceLinks, function(d) { return d.target.y; }) - 1;
       }
     });
   }
 
-  function moveSinksRight(x, phase) {
+  function moveSinksRight(y, phase) {
     nodes
       .filter(function(value, index, ar){
         return (value.group == phase);
         })
       .forEach(function(node) {
         if (!node.sourceLinks.length) {
-          node.x = x - 1;
+          node.y = y - 1;
         }
       });
   }
 
-  function scaleNodeBreadths(kx) {
+  function scaleNodeBreadths(ky) {
     nodes.forEach(function(node) {
-      node.x *= kx;
+      node.y *= ky;
     });
   }
 
   function computeNodeDepths(iterations) {
     var nodesByBreadth = d3.nest()
-        .key(function(d) { return d.x; })
+        .key(function(d) { return d.y; })
         .sortKeys(d3.ascending)
         .entries(nodes)
         .map(function(d) { return d.values; });
@@ -236,19 +236,19 @@ d3.fbo = function() {
     }
 
     function initializeNodeDepth() {
-      var ky = d3.min(nodesByBreadth, function(nodes) {
-        return (size[1] - (nodes.length - 1) * nodePadding) / d3.sum(nodes, value);
+      var kx = d3.min(nodesByBreadth, function(nodes) {
+        return (size[0] - (nodes.length - 1) * nodePadding) / d3.sum(nodes, value);
       });
 
       nodesByBreadth.forEach(function(nodes) {
         nodes.forEach(function(node, i) {
-          node.y = i;
-          node.dy = node.value * ky;
+          node.x = i;
+          node.dx = node.value * kx;
         });
       });
 
       links.forEach(function(link) {
-        link.dy = link.value * ky;
+        link.dx = link.value * kx;
       });
     }
 
@@ -256,8 +256,8 @@ d3.fbo = function() {
       nodesByBreadth.forEach(function(nodes, breadth) {
         nodes.forEach(function(node) {
           if (node.targetLinks.length) {
-            var y = d3.sum(node.targetLinks, weightedSource) / d3.sum(node.targetLinks, value);
-            node.y += (y - center(node)) * alpha;
+            var x = d3.sum(node.targetLinks, weightedSource) / d3.sum(node.targetLinks, value);
+            node.x += (x - center(node)) * alpha;
           }
         });
       });
@@ -271,8 +271,8 @@ d3.fbo = function() {
       nodesByBreadth.slice().reverse().forEach(function(nodes) {
         nodes.forEach(function(node) {
           if (node.sourceLinks.length) {
-            var y = d3.sum(node.sourceLinks, weightedTarget) / d3.sum(node.sourceLinks, value);
-            node.y += (y - center(node)) * alpha;
+            var x = d3.sum(node.sourceLinks, weightedTarget) / d3.sum(node.sourceLinks, value);
+            node.x += (x - center(node)) * alpha;
           }
         });
       });
@@ -285,8 +285,8 @@ d3.fbo = function() {
     function resolveCollisions() {
       nodesByBreadth.forEach(function(nodes) {
         var node,
-            dy,
-            y0 = 0,
+            dx,
+            x0 = 0,
             n = nodes.length,
             i;
 
@@ -294,29 +294,29 @@ d3.fbo = function() {
         nodes.sort(ascendingDepth);
         for (i = 0; i < n; ++i) {
           node = nodes[i];
-          dy = y0 - node.y;
-          if (dy > 0) node.y += dy;
-          y0 = node.y + node.dy + nodePadding;
+          dx = x0 - node.x;
+          if (dx > 0) node.x += dx;
+          x0 = node.x + node.dx + nodePadding;
         }
 
         // If the bottommost node goes outside the bounds, push it back up.
-        dy = y0 - nodePadding - size[1];
-        if (dy > 0) {
-          y0 = node.y -= dy;
+        dx = x0 - nodePadding - size[0];
+        if (dx > 0) {
+          x0 = node.x -= dx;
 
           // Push any overlapping nodes back up.
           for (i = n - 2; i >= 0; --i) {
             node = nodes[i];
-            dy = node.y + node.dy + nodePadding - y0;
-            if (dy > 0) node.y -= dy;
-            y0 = node.y;
+            dx = node.x + node.dx + nodePadding - x0;
+            if (dx > 0) node.x -= dx;
+            x0 = node.x;
           }
         }
       });
     }
 
     function ascendingDepth(a, b) {
-      return a.y - b.y;
+      return a.x - b.x;
     }
   }
 
@@ -326,28 +326,28 @@ d3.fbo = function() {
       node.targetLinks.sort(ascendingSourceDepth);
     });
     nodes.forEach(function(node) {
-      var sy = 0, ty = 0;
+      var sx = 0, tx = 0;
       node.sourceLinks.forEach(function(link) {
-        link.sy = sy;
+        link.sx = sx;
         //sy += link.dy;
       });
       node.targetLinks.forEach(function(link) {
-        link.ty = ty;
+        link.tx = tx;
         //ty += link.dy;
       });
     });
 
     function ascendingSourceDepth(a, b) {
-      return a.source.y - b.source.y;
+      return a.source.x - b.source.x;
     }
 
     function ascendingTargetDepth(a, b) {
-      return a.target.y - b.target.y;
+      return a.target.x - b.target.x;
     }
   }
 
   function center(node) {
-    return node.y + node.dy / 2;
+    return node.x + node.dx / 2;
   }
 
   function value(link) {
