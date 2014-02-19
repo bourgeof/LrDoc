@@ -66,8 +66,8 @@ d3.fbo = function() {
           yi = d3.interpolateNumber(y0, y1),
           y2 = yi(curvature),
           y3 = yi(1 - curvature),
-          x0 = d.source.x + d.sx + d.dx / 2,
-          x1 = d.target.x + d.tx + d.dx / 2;
+          x0 = d.source.x + d.sx + d.source.dx / 2,
+          x1 = d.target.x + d.tx + d.target.dx / 2;
       return "M" + x0 + "," + y0
            + "C" + x0 + "," + y2
            + " " + x1 + "," + y3
@@ -116,37 +116,13 @@ d3.fbo = function() {
   // Nodes are assigned the maximum breadth of incoming neighbors plus one;
   // nodes with no incoming links are assigned breadth zero, while
   // nodes with no outgoing links are assigned the maximum breadth.
-  function computeNodeBreadths_old() {
-    var remainingNodes = nodes,
-        nextNodes,
-        y = 0;
-
-    while (remainingNodes.length) {
-      nextNodes = [];
-      remainingNodes.forEach(function(node) {
-        node.y = y;
-        node.dy = nodeHeight;
-        node.sourceLinks.forEach(function(link) {
-          nextNodes.push(link.target);
-        });
-      });
-      remainingNodes = nextNodes;
-      ++y;
-    }
-
-    //
-    moveSinksRight(y);
-    scaleNodeBreadths((height - nodeHeight) / (y - 1));
-  }
-
-  function computeNodeBreadths() {
+   function computeNodeBreadths() {
   
-    get_order = function(arr, a_group){
+    get_group = function(arr, a_group){
       arr.forEach(function(group){
         if (group.name == a_group)
-          return group.order;
-      });
-      
+          return group;
+      });  
       return 0;
     };
 
@@ -157,11 +133,12 @@ d3.fbo = function() {
     var nodesByGroup = d3.nest()
         .key(function(d) { return d.group; })
         .sortKeys(function(a, b) {
-            return get_order(groups, b) < get_order(groups, a) ? -1 : get_order(groups, b) > get_order(groups, a) ? 1 : 0;
+            return get_group(groups, b).order < get_group(groups, a).order ? -1 : get_group(groups, b).order > get_group(groups, a).order ? 1 : 0;
           })
         .entries(nodes);
   
     var y = 0;
+    var last_group_y = 0;
 
     nodesByGroup.forEach(function(pair) {
       console.log("Node nodes2: " + pair.key);
@@ -186,7 +163,9 @@ d3.fbo = function() {
       }
       
       moveSinksRight(y, pair.key);
-     
+      get_group(groups, pair.key).from_y = last_group_y;
+      get_group(groups, pair.key).to_y = y-1;
+      last_group_y = y;
     });
  
     scaleNodeBreadths((height - nodeHeight) / (y - 1));
