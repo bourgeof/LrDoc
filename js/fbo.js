@@ -3,6 +3,7 @@ d3.fbo = function() {
       nodeHeight = 24,
       nodePadding = 8,
       size = [1, 1],
+      real_size = [1, 1],
       nodes = [],
       links = [],
       groups = [];
@@ -38,8 +39,10 @@ d3.fbo = function() {
   };
 
   fbo.size = function(_) {
-    if (!arguments.length) return size;
-    size = _;
+    if (!arguments.length) return real_size;
+    real_size = _;
+    size[0] = real_size[0] - nodePadding;
+    size[1] = real_size[1] - nodePadding;
     return fbo;
   };
 
@@ -118,12 +121,11 @@ d3.fbo = function() {
   // nodes with no outgoing links are assigned the maximum breadth.
    function computeNodeBreadths() {
   
-    get_group = function(arr, a_group){
+    get_group_order = function(arr, a_group){
       arr.forEach(function(group){
         if (group.name == a_group)
-          return group;
+          return group.order;
       });  
-      return 0;
     };
 
     var group_map = d3.nest()
@@ -133,7 +135,7 @@ d3.fbo = function() {
     var nodesByGroup = d3.nest()
         .key(function(d) { return d.group; })
         .sortKeys(function(a, b) {
-            return get_group(groups, b).order < get_group(groups, a).order ? -1 : get_group(groups, b).order > get_group(groups, a).order ? 1 : 0;
+            return get_group_order(groups, b) < get_group_order(groups, a) ? -1 : get_group_order(groups, b) > get_group_order(groups, a) ? 1 : 0;
           })
         .entries(nodes);
   
@@ -163,12 +165,21 @@ d3.fbo = function() {
       }
       
       moveSinksRight(y, pair.key);
-      get_group(groups, pair.key).from_y = last_group_y;
-      get_group(groups, pair.key).to_y = y-1;
+      
+      groups.forEach(function(group){
+        if (group.name == pair.key)
+        {
+          group.x = 0;
+          group.dx = width ;
+          group.y = last_group_y;
+          group.dy = y - last_group_y;
+          console.log("group name: " + group.name + ", group.x: " + group.x  + ", group.dx: " + group.dx + ", group.y: " + group.y + ", group.dy: " + group.dy );
+        }
+      });        
       last_group_y = y;
     });
  
-    scaleNodeBreadths((height - nodeHeight) / (y - 1));
+    scaleNodeBreadths((size[1] - nodeHeight) / (y - 1));
   }
   
   function moveSourcesRight() {
@@ -194,6 +205,13 @@ d3.fbo = function() {
   function scaleNodeBreadths(ky) {
     nodes.forEach(function(node) {
       node.y *= ky;
+      node.y += nodePadding/2;
+    });
+    
+    groups.forEach(function(group) {
+      group.y *= ky;
+      group.dy *= ky;
+      console.log("Group name: " + group.name + ", x: " + group.x + ", y: " + group.y + ", dx: " + group.dx + ", dy: " + group.dy);
     });
   }
 
